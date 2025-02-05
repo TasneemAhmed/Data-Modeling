@@ -170,6 +170,7 @@ create  table players (
     scoring_class scoring_class, -- this column will be struct but with specified values
     years_since_last_season integer,
     current_season integer,
+    is_active boolean,
     primary key (player_name, current_season)
 )
 
