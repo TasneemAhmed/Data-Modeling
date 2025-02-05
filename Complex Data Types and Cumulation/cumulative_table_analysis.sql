@@ -52,45 +52,48 @@ BEGIN
             SELECT *
             FROM player_seasons
             WHERE season = current_season_counter + 1 -- Data for the next season
+        ),
+        statiscs_cte as (SELECT COALESCE(t.player_name, y.player_name)   AS player_name,
+                                COALESCE(t.height, y.height)             AS height,
+                                COALESCE(t.college, y.college)           AS college,
+                                COALESCE(t.country, y.country)           AS country,
+                                COALESCE(t.draft_year, y.draft_year)     AS draft_year,
+                                COALESCE(t.draft_round, y.draft_round)   AS draft_round,
+                                COALESCE(t.draft_number, y.draft_number) AS draft_number,
+                                CASE
+                                    WHEN y.player_season_stats IS NULL THEN
+                                        ARRAY [ROW (t.season, t.gp, t.pts, t.reb, t.ast)::season_stats]
+                                    WHEN y.player_season_stats IS NOT NULL AND t.season IS NOT NULL THEN
+                                        y.player_season_stats || ARRAY [ROW (t.season, t.gp, t.pts, t.reb, t.ast)::season_stats]
+                                    ELSE
+                                        y.player_season_stats
+                                    END                                  AS player_season_stats,
+                                CASE
+                                    WHEN t.pts IS NOT NULL THEN
+                                        CASE
+                                            WHEN t.pts > 20 THEN 'star'
+                                            WHEN t.pts > 15 THEN 'good'
+                                            WHEN t.pts > 10 THEN 'average'
+                                            ELSE 'bad'
+                                            END::scoring_class
+                                    ELSE
+                                        y.scoring_class
+                                    END                                  AS scoring_class,
+                                CASE
+                                    WHEN t.season IS NOT NULL THEN 0
+                                    ELSE y.years_since_last_season + 1
+                                    END  AS years_since_last_season,
+                                COALESCE(t.season, y.current_season + 1) AS current_season
+                         FROM today_cte AS t
+                         FULL OUTER JOIN
+                              yesterday_cte AS y
+                              ON
+                                  t.player_name = y.player_name
         )
-        SELECT
-            COALESCE(t.player_name, y.player_name) AS player_name,
-            COALESCE(t.height, y.height) AS height,
-            COALESCE(t.college, y.college) AS college,
-            COALESCE(t.country, y.country) AS country,
-            COALESCE(t.draft_year, y.draft_year) AS draft_year,
-            COALESCE(t.draft_round, y.draft_round) AS draft_round,
-            COALESCE(t.draft_number, y.draft_number) AS draft_number,
-            CASE
-                WHEN y.player_season_stats IS NULL THEN
-                    ARRAY[ROW(t.season, t.gp, t.pts, t.reb, t.ast)::season_stats]
-                WHEN y.player_season_stats IS NOT NULL AND t.season IS NOT NULL THEN
-                    y.player_season_stats || ARRAY[ROW(t.season, t.gp, t.pts, t.reb, t.ast)::season_stats]
-                ELSE
-                    y.player_season_stats
-            END AS player_season_stats,
-            CASE
-                WHEN t.pts IS NOT NULL THEN
-                    CASE
-                        WHEN t.pts > 20 THEN 'star'
-                        WHEN t.pts > 15 THEN 'good'
-                        WHEN t.pts > 10 THEN 'average'
-                        ELSE 'bad'
-                    END::scoring_class
-                ELSE
-                    y.scoring_class
-            END AS scoring_class,
-            CASE
-                WHEN t.season IS NOT NULL THEN 0
-                ELSE y.years_since_last_season + 1
-            END AS years_since_last_season,
-            COALESCE(t.season, y.current_season + 1) AS current_season
-        FROM
-            today_cte AS t
-        FULL OUTER JOIN
-            yesterday_cte AS y
-        ON
-            t.player_name = y.player_name;
+        select *,
+               -- check if current season as last season in player_season_stats then he is active (true)
+                current_season = (stat.player_season_stats[cardinality(stat.player_season_stats)]::season_stats).season as is_active
+        from statiscs_cte as stat;
 
     END LOOP;
 END $$;
@@ -114,7 +117,7 @@ to their first season using cumulative data stored in the `player_season_stats` 
      (case when (player_season_stats[1]::season_stats).pts =0 then 1 else (player_season_stats[1]::season_stats).pts end)
 
  from players
- where current_season=2001;
+ where current_season=2003;
 
 /*
  ### Explanation of Approach in Query 2
