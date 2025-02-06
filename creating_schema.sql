@@ -174,5 +174,18 @@ create  table players (
     primary key (player_name, current_season)
 )
 
-
+/* Create the table 'players_scd_table' if it does not already exist.
+This table is used to implement a Slowly Changing Dimension (SCD) approach to track player data over multiple seasons.
+Each record in the table represents a period (or streak) during which a player's attributes (scoring_class and is_active) remain consistent.
+*/
+create table if not exists public.players_scd_table
+(
+    player_name    text    not null, -- The name of the player; uniquely identifies players within the table.
+    scoring_class  scoring_class,   -- The player's scoring classification for the given streak (e.g., good, bad).
+    is_active      boolean,         -- Indicates whether the player was active during the streak (true/false).
+    start_season   integer not null,-- The first season in which the player's scoring_class and is_active attributes remained unchanged.
+    end_season     integer,         -- The last season of the unchanged streak. If null, the streak is ongoing.
+    current_season integer,         -- The season for which the record belongs to or was last updated.
+    primary key (player_name, start_season) -- Composite primary key to ensure unique entries per player and streak start season.
+);
 
