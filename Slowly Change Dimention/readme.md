@@ -1,3 +1,4 @@
+## Slowly Changing Dimension (SCD)
 This repository contains two SQL scripts that showcase the implementation of **Slowly Changing Dimensions (SCD)** to handle historical and incremental updates of player records. These scripts are designed to process data for a `players_scd_table` that maintains a history of player attributes across different seasons.
 #### What is Slowly Changing Dimension (SCD)?
 Slowly Changing Dimension (SCD) refers to a method in data warehousing to manage and track changes in data attributes over time without overwriting historical data. It allows organizations to:
