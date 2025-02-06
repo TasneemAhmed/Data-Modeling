@@ -1,3 +1,4 @@
+# Cumulative Table Design
 ## 1. Purpose of `creating_schema.sql` and `cumulative_table_analysis.sql`
 The scripts aim to process player season statistics and maintain cumulative data for players in an efficient and consistent manner. This is achieved using a design based on **cumulative tables** and **complex data types** (such as arrays), enabling seamless data collection, aggregation, and analysis across multiple seasons.
 ## 2. Problem These Scripts Solve
