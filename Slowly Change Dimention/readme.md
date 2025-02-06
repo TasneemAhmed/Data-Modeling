@@ -67,7 +67,7 @@ In this context, the `players_scd_table` represents an SCD table that tracks cha
 2. For each new season, use the `SCD_Incremental_Load.sql` script to add the new data and update the historical records in the SCD table.
 
 ### Schema Requirements
-The tables creation will be found in Data-Modeling/creating_schema.sql
+The tables creation will be found in **Data-Modeling/creating_schema.sql**
 - Table: `players_scd_table`
     - Must store columns such as `player_name`, `scoring_class`, `is_active`, `start_season`, `end_season`, and `current_season`.
 
